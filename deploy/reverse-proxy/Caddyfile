@@ -1,0 +1,9 @@
+# Pocket Forum behind Caddy.
+forum.example.com {
+	request_body {
+		max_size 16MB
+	}
+	reverse_proxy pocket-forum:8080 {
+		flush_interval -1
+	}
+}
