@@ -62,6 +62,7 @@ func (s *Server) Router() http.Handler {
 			r.Post("/import", s.handleImport)
 			r.Post("/forums/{forum}/import/discourse", s.handleImportDiscourse)
 			r.Get("/export.json", s.handleExportJSON)
+			r.Get(strings.TrimPrefix(core.PortablePath, "/api/v1"), portable.Handler())
 			r.Post("/ai/summary", s.handleAISummary)
 			r.Post("/ai/reply", s.handleAIReply)
 			r.Post("/ai/improve", s.handleAIImprove)

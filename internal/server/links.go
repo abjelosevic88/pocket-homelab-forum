@@ -21,6 +21,20 @@ var linkOffers = []core.Offer{
 	{Scope: "forum:write", Name: "Post in your forums", Description: "Start a topic and reply as you (Pocket Blog's \"Discuss this post\", Pocket AI when you ask it to), react to a post and mark what you have read; change or remove only the posts that app wrote itself."},
 }
 
+// portable is what Pocket Move may copy out and bring in for a person
+// (docs/move.md in pocket-homelab-core); Register adds move:export/import.
+// Only what is the person's own: the forums they own, whole, with their
+// profile, bookmarks and drafts; forums they are only a member of stay put.
+var portable = &core.Portable{
+	Exports: []core.PortableExport{
+		{Path: "/api/v1/export.json", File: "forum.json", Kind: core.KindPocket, Title: "The forums you own with their categories, topics, posts and polls, plus your profile, bookmarks and drafts"},
+		{Path: "/api/v1/export.csv", File: "topics.csv", Kind: core.KindCSV, Title: "Every topic in the forums you are in, one per line"},
+	},
+	Imports: []core.PortableImport{
+		{Path: "/api/v1/import", Kind: core.KindPocket, Form: "file", MaxBytes: 128 << 20, Title: "Brings back forums you owned on another box, as yours; topics already here are left alone"},
+	},
+}
+
 type linkRoute struct {
 	methods string
 	path    *regexp.Regexp
@@ -42,6 +56,9 @@ var errLinkScope = errors.New("outside the link's scope")
 
 // linkAllows reports whether a link token with these scopes may make this request.
 func linkAllows(scopes []string, r *http.Request) bool {
+	if portable.LinkAllows(scopes, r) {
+		return true
+	}
 	for _, lr := range linkRoutes {
 		if !strings.Contains(" "+lr.methods+" ", " "+r.Method+" ") || !lr.path.MatchString(r.URL.Path) {
 			continue

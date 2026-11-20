@@ -261,6 +261,9 @@ func (s *Server) importDoc(ctx context.Context, u *store.User, doc *exportDoc) (
 			if _, err := s.store.TopicBySource(ctx, f.ID, "import", et.Key); err == nil {
 				continue
 			}
+			if s.sameTopic(ctx, f, et) {
+				continue
+			}
 			n, err := s.importTopic(ctx, f, u, bySlug[et.Category], et, "import")
 			if err != nil {
 				return nil, err
@@ -271,6 +274,22 @@ func (s *Server) importDoc(ctx context.Context, u *store.User, doc *exportDoc) (
 	}
 	return map[string]any{"ok": true, "forums": forums, "topics": topics, "posts": posts,
 		"text": fmt.Sprintf("Brought back %d %s with %d %s", topics, plural(topics, "topic", "topics"), posts, plural(posts, "post", "posts"))}, nil
+}
+
+// sameTopic is true when the export's topic is this very topic: a person
+// bringing their own export back into the box it came from (keys of topics
+// made here are "<forum slug>/<topic id>").
+func (s *Server) sameTopic(ctx context.Context, f *store.Forum, et exportTopic) bool {
+	slug, num, ok := strings.Cut(et.Key, "/")
+	if !ok || slug != f.Slug {
+		return false
+	}
+	tid, err := strconv.ParseInt(num, 10, 64)
+	if err != nil {
+		return false
+	}
+	t, err := s.store.GetTopic(ctx, tid)
+	return err == nil && t.ForumID == f.ID && t.Title == clip(firstNonEmpty(et.Title, "Untitled"), maxTitle)
 }
 
 // importTopic adds a topic with its posts in order; posts marked mine are the

@@ -58,3 +58,5 @@ Posts are Markdown, plus `@handle` mentions and `[quote=handle #3]…[/quote]` q
 ## AI, other apps, data
 
 `POST /ai/summary`, `/ai/reply`, `/ai/improve`, `/ai/suggest`, `/ai/ask`, `/ai/check`; `GET /apps` and `/apps/…` for Chat, Email, Contacts, Calendar, Tasks, Projects, Notes, Files, Photos, Learn, Blog, Bookshelf, Places, Translate; `GET /export.json`, `GET /export.csv`, `POST /import`, `GET /backup` (admin).
+
+Pocket Move can copy your forums, bookmarks and drafts out and bring forums you owned elsewhere in (`GET /pocket/portable`, link scopes `move:export` / `move:import`); importing the same file twice adds nothing.
